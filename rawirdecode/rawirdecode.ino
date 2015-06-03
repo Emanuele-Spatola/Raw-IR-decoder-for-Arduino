@@ -7,6 +7,8 @@
  or transmitter (by pulsing an IR LED at ~38KHz for the
  durations detected 
  
+ This variation allow to use multiple receivers
+ 
  Code is public domain, check out www.ladyada.net and adafruit.com
  for more tutorials! 
  */
@@ -19,6 +21,7 @@
 // http://arduino.cc/en/Hacking/PinMapping168 for the 'raw' pin mapping
 #define IRpin_PIN      PIND
 #define IRpin          2
+#define IRpin2         3
 
 // the maximum pulse we'll listen for - 65 milliseconds is a long time
 #define MAXPULSE 65000
@@ -43,7 +46,8 @@ void loop(void) {
   
   
 //  while (digitalRead(IRpin)) { // this is too slow!
-    while (IRpin_PIN & (1 << IRpin)) {
+    // HIGH means no light detected, so if one of the pin is NOT HIGH, I want this condition to be false, so I use &
+    while ((IRpin_PIN & (1 << IRpin)) && (IRpin_PIN & (1 << IRpin2))) {
      // pin is still HIGH
 
      // count off another few microseconds
@@ -62,8 +66,8 @@ void loop(void) {
   // we didn't time out so lets stash the reading
   pulses[currentpulse][0] = highpulse;
   
-  // same as above
-  while (! (IRpin_PIN & _BV(IRpin))) {
+  // LOW means light detected, so if at least one of the pin is LOW, I'm still receiving, so I want this condition to be true, so I use ||
+  while (!(IRpin_PIN & _BV(IRpin)) || !(IRpin_PIN & _BV(IRpin2)))  {
      // pin is still LOW
      lowpulse++;
      delayMicroseconds(RESOLUTION);
